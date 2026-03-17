@@ -1,0 +1,125 @@
+<!-- extension/popup/popup.html -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lasso Copy</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body class="popup">
+    <div class="header">
+      <div class="logo">
+        <div class="logo-icon">L</div>
+        <div class="logo-text">Lasso <span>Copy</span></div>
+      </div>
+      <div class="tagline">Drag to select content</div>
+    </div>
+
+    <div class="body">
+      <button class="main-btn" id="start-lasso">
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+        >
+          <path
+            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"
+            stroke-dasharray="4 2"
+          />
+          <path
+            d="M8 12l3 3 5-5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+        Start Selection
+      </button>
+
+      <div id="status-msg"></div>
+
+      <!-- Selection Mode -->
+      <div class="mode-section">
+        <div class="mode-label">Selection Mode</div>
+        <div class="mode-toggle">
+          <button class="mode-btn" id="mode-freeform" data-mode="freeform">
+            Freeform
+          </button>
+          <button
+            class="mode-btn active"
+            id="mode-rectangle"
+            data-mode="rectangle"
+          >
+            Rectangle
+          </button>
+        </div>
+      </div>
+
+      <!-- Copy Format -->
+      <div class="mode-section">
+        <div class="mode-label">Copy Format</div>
+        <div class="mode-toggle">
+          <button class="mode-btn active" id="format-html" data-format="html">
+            HTML
+          </button>
+          <button class="mode-btn" id="format-markdown" data-format="markdown">
+            Markdown
+          </button>
+          <button class="mode-btn" id="format-text" data-format="text">
+            Text
+          </button>
+        </div>
+      </div>
+
+      <div class="instructions">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-text">Click Start Selection</div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-text">Draw selection around content</div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-text">Press Ctrl+C or use toolbar</div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Settings -->
+      <div class="settings-section">
+        <label class="checkbox-label">
+          <input type="checkbox" id="setting-toolbar" checked />
+          <span>Show floating toolbar</span>
+        </label>
+      </div>
+
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-val" id="stat-copies">0</div>
+          <div class="stat-label">Copies Made</div>
+        </div>
+        <div class="stat">
+          <div class="stat-val">OK</div>
+          <div class="stat-label">Tables</div>
+        </div>
+        <div class="stat">
+          <div class="stat-val">OK</div>
+          <div class="stat-label">Markdown</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <span class="version">v1.0.0</span>
+      <span class="tip">Ctrl+Shift+L</span>
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

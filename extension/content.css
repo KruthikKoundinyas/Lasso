@@ -1,0 +1,254 @@
+/* content.css — Styles injected into webpages by Lasso Copy */
+
+:root {
+  --bg: #0f111f;
+  --bg-soft: #1e223b;
+  --text: #f5f5f5;
+  --primary: #db5266;
+  --secondary: #404272;
+  --accent: #71649c;
+  --success: #10b981;
+  --danger: #ef4444;
+  --border: rgba(255, 255, 255, 0.08);
+}
+
+/* Animation keyframes */
+@keyframes __lasso-fadein {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@keyframes __lasso-fadeout {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-50%) translateY(4px);
+  }
+}
+
+@keyframes __lasso-toolbar-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) scale(0.92) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) scale(1) translateY(0);
+  }
+}
+
+@keyframes __lasso-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 1px rgba(219, 82, 102, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 0 3px rgba(219, 82, 102, 0.15);
+  }
+}
+
+/* Banner */
+#__lasso-banner {
+  animation: __lasso-fadein 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Overlay */
+.__lasso-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 2147483645;
+  cursor: crosshair;
+}
+
+.__lasso-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* Lasso rectangle */
+#__lasso-rect {
+  position: absolute;
+  pointer-events: none;
+  animation: __lasso-pulse 1.5s ease-in-out infinite;
+}
+
+/* Highlight layer */
+.__lasso-highlight-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 2147483646;
+  overflow: hidden;
+}
+
+.__lasso-highlight {
+  position: absolute;
+  transition: all 0.1s ease-out;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+/* Toolbar */
+#__lasso-toolbar {
+  position: absolute;
+  display: flex;
+  gap: 8px;
+  padding: 10px 14px;
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+  z-index: 2147483647;
+
+  opacity: 0;
+  transform: translateX(-50%) scale(0.9) translateY(8px);
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+#__lasso-toolbar.__lasso-toolbar-visible {
+  opacity: 1;
+  transform: translateX(-50%) scale(1) translateY(0);
+}
+
+#__lasso-toolbar button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+#__lasso-toolbar button:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.1);
+}
+
+#__lasso-toolbar button:active {
+  transform: translateY(0);
+}
+
+#__lasso-toolbar button.__lasso-btn-cancel {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+#__lasso-toolbar button.__lasso-btn-cancel:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Toolbar action buttons */
+.__lasso-btn-action {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.__lasso-btn-action:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.1);
+}
+
+.__lasso-btn-action:active {
+  transform: translateY(0);
+}
+
+/* Toolbar cancel button */
+.__lasso-btn-cancel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.__lasso-btn-cancel:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Toasts */
+#__lasso-toast-container {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2147483647;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.__lasso-toast {
+  padding: 12px 20px;
+  background: var(--success);
+  color: white;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  transform: translateY(12px);
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  white-space: nowrap;
+}
+
+.__lasso-toast.__lasso-toast-error {
+  background: var(--danger);
+}
+
+@media (max-width: 600px) {
+  #__lasso-toolbar {
+    flex-wrap: wrap;
+    max-width: 280px;
+    justify-content: center;
+  }
+}

@@ -1,4 +1,4 @@
-/* popup.css */
+/* popup/popup.css */
 
 :root {
   --bg: #0f111f;
@@ -263,6 +263,7 @@ kbd {
   height: 16px;
   accent-color: var(--primary);
   cursor: pointer;
+  background: transparent;
 }
 
 #status-msg {

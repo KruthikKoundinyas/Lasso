@@ -1,0 +1,99 @@
+<!-- Popup Mock Only - Embeddable via fetch -->
+<div class="popup-mock">
+  <!-- Header -->
+  <div class="popup-header">
+    <div class="popup-logo">
+      <div class="popup-logo-icon">L</div>
+      <div class="popup-logo-text">Lasso <span>Copy</span></div>
+    </div>
+    <div class="popup-tagline">Drag to select content</div>
+  </div>
+
+  <!-- Body -->
+  <div class="popup-body">
+    <!-- Start Button -->
+    <button class="popup-main-btn">
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.5"
+      >
+        <path
+          d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"
+          stroke-dasharray="4 2"
+        />
+        <path d="M8 12l3 3 5-5" />
+      </svg>
+      Start Selection
+    </button>
+
+    <!-- Selection Mode -->
+    <div class="popup-section">
+      <div class="popup-label">Selection Mode</div>
+      <div class="popup-toggle-group">
+        <button
+          class="popup-option"
+          data-info="Draw freely around any content - perfect for irregular shapes and complex layouts"
+        >
+          Freeform
+        </button>
+        <button
+          class="popup-option active"
+          data-info="Quick rectangular selection - ideal for tables and structured content"
+        >
+          Rectangle
+        </button>
+      </div>
+    </div>
+
+    <!-- Copy Format -->
+    <div class="popup-section">
+      <div class="popup-label">Copy Format</div>
+      <div class="popup-toggle-group">
+        <button
+          class="popup-option active"
+          data-info="Preserves tables, lists, images, and all formatting - paste directly into Docs, Notion, or Word"
+        >
+          HTML
+        </button>
+        <button
+          class="popup-option"
+          data-info="Convert content to Markdown syntax - great for developers and note-taking apps"
+        >
+          Markdown
+        </button>
+        <button
+          class="popup-option"
+          data-info="Plain text without any formatting - useful for simple copy-paste needs"
+        >
+          Text
+        </button>
+      </div>
+    </div>
+
+    <!-- Instructions -->
+    <div class="popup-instructions">
+      <div class="popup-step">
+        <div class="popup-step-num">1</div>
+        <div class="popup-step-text">Click Start Selection</div>
+      </div>
+      <div class="popup-step">
+        <div class="popup-step-num">2</div>
+        <div class="popup-step-text">Draw selection around content</div>
+      </div>
+      <div class="popup-step">
+        <div class="popup-step-num">3</div>
+        <div class="popup-step-text">Press Ctrl+C or use toolbar</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="popup-footer">
+    <span class="popup-version">v1.0.0</span>
+    <span class="popup-tip">Ctrl+Shift+L</span>
+  </div>
+</div>

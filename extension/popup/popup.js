@@ -12,6 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Format buttons
   const formatHtml = document.getElementById("format-html");
+  const formatCleanHtml = document.getElementById("format-clean-html");
   const formatMarkdown = document.getElementById("format-markdown");
   const formatText = document.getElementById("format-text");
 
@@ -42,13 +43,21 @@ document.addEventListener("DOMContentLoaded", () => {
       if (result.settings.format === "markdown") {
         formatMarkdown.classList.add("active");
         formatHtml.classList.remove("active");
+        formatCleanHtml.classList.remove("active");
         formatText.classList.remove("active");
       } else if (result.settings.format === "text") {
         formatText.classList.add("active");
         formatHtml.classList.remove("active");
+        formatCleanHtml.classList.remove("active");
         formatMarkdown.classList.remove("active");
+      } else if (result.settings.format === "cleanHTML") {
+        formatCleanHtml.classList.add("active");
+        formatHtml.classList.remove("active");
+        formatMarkdown.classList.remove("active");
+        formatText.classList.remove("active");
       } else {
         formatHtml.classList.add("active");
+        formatCleanHtml.classList.remove("active");
         formatMarkdown.classList.remove("active");
         formatText.classList.remove("active");
       }
@@ -63,6 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let format = "html";
     if (formatMarkdown.classList.contains("active")) format = "markdown";
     else if (formatText.classList.contains("active")) format = "text";
+    else if (formatCleanHtml && formatCleanHtml.classList.contains("active")) format = "cleanHTML";
 
     return { mode, format };
   }
@@ -83,14 +93,26 @@ document.addEventListener("DOMContentLoaded", () => {
   // Format button click handlers
   formatHtml.addEventListener("click", () => {
     formatHtml.classList.add("active");
+    if (formatCleanHtml) formatCleanHtml.classList.remove("active");
     formatMarkdown.classList.remove("active");
     formatText.classList.remove("active");
     saveSettings();
   });
 
+  if (formatCleanHtml) {
+    formatCleanHtml.addEventListener("click", () => {
+      formatCleanHtml.classList.add("active");
+      formatHtml.classList.remove("active");
+      formatMarkdown.classList.remove("active");
+      formatText.classList.remove("active");
+      saveSettings();
+    });
+  }
+
   formatMarkdown.addEventListener("click", () => {
     formatMarkdown.classList.add("active");
     formatHtml.classList.remove("active");
+    if (formatCleanHtml) formatCleanHtml.classList.remove("active");
     formatText.classList.remove("active");
     saveSettings();
   });
@@ -98,6 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
   formatText.addEventListener("click", () => {
     formatText.classList.add("active");
     formatHtml.classList.remove("active");
+    if (formatCleanHtml) formatCleanHtml.classList.remove("active");
     formatMarkdown.classList.remove("active");
     saveSettings();
   });

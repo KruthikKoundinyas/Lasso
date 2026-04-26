@@ -3,6 +3,7 @@
 import { state } from "../state.js";
 import {
   serializeHTML,
+  serializeCleanHTML,
   serializePlainText,
   serializeMarkdown,
 } from "../serializer.js";
@@ -72,6 +73,11 @@ function createToolbar(elements) {
     {
       label: "Copy HTML",
       onClick: () => handleCopy(elements, "html"),
+      className: "__lasso-btn-action",
+    },
+    {
+      label: "Copy Clean HTML",
+      onClick: () => handleCopy(elements, "cleanHTML"),
       className: "__lasso-btn-action",
     },
     {
@@ -208,6 +214,16 @@ async function handleCopy(elements, format) {
         );
         await writeHTML(content);
         showToast("Copied as HTML");
+        break;
+
+      case "cleanHTML":
+        content = serializeCleanHTML(elements);
+        console.log(
+          "[Lasso Debug] serializeCleanHTML result:",
+          content?.substring(0, 100),
+        );
+        await writeHTML(content);
+        showToast("Copied as Clean HTML");
         break;
 
       case "markdown":

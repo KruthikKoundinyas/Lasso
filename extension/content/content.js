@@ -802,6 +802,12 @@
         Copy Text
       </button>`;
       firstFormat = "text";
+    } else if (format === "cleanHTML") {
+      firstButton = `<button id="__lasso-btn-clean" style="${btnStyle("#6366f1")}">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="16,18 22,12 16,6"/><polyline points="8,6 2,12 8,18"/></svg>
+        Copy Clean
+      </button>`;
+      firstFormat = "cleanHTML";
     } else {
       firstButton = `<button id="__lasso-btn-html" style="${btnStyle("#6366f1")}">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="16,18 22,12 16,6"/><polyline points="8,6 2,12 8,18"/></svg>
@@ -839,6 +845,10 @@
       document
         .getElementById("__lasso-btn-text")
         .addEventListener("click", () => copyContent("text"));
+    } else if (format === "cleanHTML") {
+      document
+        .getElementById("__lasso-btn-clean")
+        .addEventListener("click", () => copyContent("cleanHTML"));
     } else {
       document
         .getElementById("__lasso-btn-html")
@@ -960,10 +970,102 @@
   function serializePlainText() {
     const parts = [];
     for (const el of state.selectedElements) {
-      const text = el.innerText || el.textContent || "";
+      const text = convertToPlainText(el);
       if (text.trim()) parts.push(text.trim());
     }
     return parts.join("\n\n");
+  }
+
+  // Convert element to plain text with proper formatting
+  function convertToPlainText(el) {
+    if (!el) return "";
+
+    const tagName = el.tagName ? el.tagName.toLowerCase() : "";
+
+    console.log("[Lasso Debug] convertToPlainText for tag:", tagName);
+
+    if (tagName === "ul" || tagName === "ol") {
+      return convertListToPlainText(el);
+    } else if (tagName === "table") {
+      return convertTableToPlainText(el);
+    } else if (tagName === "a") {
+      const href = el.getAttribute("href") || "";
+      const text = (el.textContent || "").trim();
+      return text + (href ? ` (${href})` : "");
+    } else if (tagName === "img") {
+      const alt = el.getAttribute("alt");
+      return alt ? `[Image: ${alt}]` : "";
+    } else if (tagName === "figure") {
+      const img = el.querySelector("img");
+      const caption = el.querySelector("figcaption");
+      let text = "";
+      if (img) {
+        const alt = img.getAttribute("alt");
+        text = alt ? `[Image: ${alt}]` : "";
+      }
+      if (caption) {
+        text += (text ? "\n" : "") + caption.textContent;
+      }
+      return text;
+    }
+
+    // For other elements, process inline links
+    let result = "";
+    const walker = document.createTreeWalker(
+      el,
+      NodeFilter.SHOW_TEXT,
+      null,
+      false,
+    );
+    let node;
+    while ((node = walker.nextNode())) {
+      let text = node.textContent;
+      const parent = node.parentElement;
+      if (parent && parent.tagName && parent.tagName.toLowerCase() === "a") {
+        const href = parent.getAttribute("href") || "";
+        const linkText = text.trim();
+        if (linkText && href) {
+          text = linkText + ` (${href})`;
+        }
+      }
+      result += text;
+    }
+    return result.trim();
+  }
+
+  function convertListToPlainText(listEl) {
+    const items = listEl.querySelectorAll(":scope > li");
+    if (items.length === 0) return "";
+
+    const lines = [];
+    items.forEach((item) => {
+      let text = item.textContent.trim();
+      // Handle nested lists
+      const nestedUl = item.querySelector(":scope > ul");
+      const nestedOl = item.querySelector(":scope > ol");
+      if (nestedUl || nestedOl) {
+        // Remove nested list content from parent item text
+        const nestedContent = (nestedUl || nestedOl).textContent;
+        text = text.replace(nestedContent, "").trim();
+      }
+      lines.push("* " + text);
+    });
+    return lines.join("\n");
+  }
+
+  function convertTableToPlainText(table) {
+    const rows = table.querySelectorAll("tr");
+    if (rows.length === 0) return "";
+
+    const lines = [];
+    rows.forEach((row) => {
+      const cells = row.querySelectorAll("th, td");
+      const cellTexts = Array.from(cells).map((cell) =>
+        cell.textContent.trim(),
+      );
+      lines.push(cellTexts.join(" | "));
+    });
+    return lines.join("\n");
   }
 
   function serializeMarkdown() {
@@ -975,16 +1077,14 @@
     return parts.join("\n\n");
   }
 
-  // Simple HTML to Markdown converter
+  // Simple HTML to Markdown converter - preserves inline formatting
   function htmlToMarkdown(element) {
     if (!element) return "";
 
     // Clone to avoid modifying original
     const clone = element.cloneNode(true);
 
-    // Process in order of specificity (most specific first)
-
-    // Code blocks (pre > code)
+    // First process code blocks (pre > code)
     const preBlocks = clone.querySelectorAll("pre");
     preBlocks.forEach((pre) => {
       const code = pre.querySelector("code");
@@ -992,7 +1092,7 @@
       pre.outerHTML = "```\n" + text.trim() + "\n```";
     });
 
-    // Inline code
+    // Inline code - process before other inline elements
     const codeElements = clone.querySelectorAll("code");
     codeElements.forEach((code) => {
       if (!code.closest("pre")) {
@@ -1018,21 +1118,6 @@
 
     const h6s = clone.querySelectorAll("h6");
     h6s.forEach((h) => (h.outerHTML = "###### " + h.textContent + "\n"));
-
-    // Bold
-    const bolds = clone.querySelectorAll("strong, b");
-    bolds.forEach((b) => (b.outerHTML = "**" + b.textContent + "**"));
-
-    // Italic
-    const italics = clone.querySelectorAll("em, i");
-    italics.forEach((i) => (i.outerHTML = "*" + i.textContent + "*"));
-
-    // Links
-    const links = clone.querySelectorAll("a");
-    links.forEach((a) => {
-      const href = a.getAttribute("href") || "";
-      a.outerHTML = "[" + a.textContent + "](" + href + ")";
-    });
 
     // Lists - process ordered first, then unordered
     const ols = clone.querySelectorAll("ol");
@@ -1069,14 +1154,6 @@
     const brs = clone.querySelectorAll("br");
     brs.forEach((br) => (br.outerHTML = "\n"));
 
-    // Paragraphs - just keep text
-    const paragraphs = clone.querySelectorAll("p");
-    paragraphs.forEach((p) => (p.outerHTML = p.textContent + "\n"));
-
-    // Divs and spans - just keep text content
-    const divs = clone.querySelectorAll("div, span");
-    divs.forEach((d) => (d.outerHTML = d.textContent));
-
     // Tables - basic support
     const tables = clone.querySelectorAll("table");
     tables.forEach((table) => {
@@ -1102,11 +1179,65 @@
       img.outerHTML = "![" + alt + "](" + src + ")";
     });
 
+    // For paragraphs, divs, spans, etc. - process inline formatting
+    const containerTags = ["p", "div", "span", "td", "th", "li", "blockquote"];
+    containerTags.forEach((tag) => {
+      const elements = clone.querySelectorAll(tag);
+      elements.forEach((el) => {
+        el.outerHTML = processInlineFormatting(el);
+      });
+    });
+
     // Clean up extra whitespace but preserve newlines
     let result = clone.textContent;
     result = result.replace(/\n{3,}/g, "\n\n"); // Max 2 newlines
 
     return result.trim();
+  }
+
+  // Process inline formatting (bold, italic, links) while preserving text
+  function processInlineFormatting(el) {
+    let result = "";
+    const walker = document.createTreeWalker(
+      el,
+      NodeFilter.SHOW_TEXT,
+      null,
+      false,
+    );
+    let node;
+
+    while ((node = walker.nextNode())) {
+      let text = node.textContent;
+      const parent = node.parentElement;
+
+      if (parent) {
+        const tag = parent.tagName.toLowerCase();
+        switch (tag) {
+          case "strong":
+          case "b":
+            text = "**" + text + "**";
+            break;
+          case "em":
+          case "i":
+            text = "*" + text + "*";
+            break;
+          case "a":
+            const href = parent.getAttribute("href") || "";
+            text = "[" + text + "](" + href + ")";
+            break;
+          case "code":
+            if (!parent.closest("pre")) {
+              text = "`" + text + "`";
+            }
+            break;
+          case "u":
+            text = "_" + text + "_";
+            break;
+        }
+      }
+      result += text;
+    }
+    return result;
   }
 
   // ─────────────────────────────────────────
@@ -1118,6 +1249,12 @@
       "[Lasso Debug] selectedElements:",
       state.selectedElements?.length,
     );
+    
+    // Debug: Log what's in selectedElements
+    if (state.selectedElements && state.selectedElements.length > 0) {
+      console.log("[Lasso Debug] First selected element:", state.selectedElements[0]);
+      console.log("[Lasso Debug] First element tag:", state.selectedElements[0]?.tagName);
+    }
 
     try {
       if (format === "html") {
@@ -1126,6 +1263,10 @@
         await writeToClipboard(html, text);
       } else if (format === "markdown") {
         const markdown = serializeMarkdown();
+        console.log(
+          "[Lasso Debug] serializeMarkdown result (first 200 chars):",
+          markdown?.substring(0, 200),
+        );
         await navigator.clipboard.writeText(markdown);
       } else {
         const text = serializePlainText();
@@ -1170,17 +1311,80 @@
   }
 
   async function writeToClipboard(html, plainText) {
+    // Ensure we have valid HTML
+    if (!html || html.trim() === "") {
+      console.warn("[Lasso] No HTML content to write");
+      await navigator.clipboard.writeText(plainText || "");
+      return;
+    }
+    
+    // Ensure plainText fallback exists
+    if (!plainText) {
+      const temp = document.createElement("div");
+      temp.innerHTML = html;
+      plainText = temp.textContent || temp.innerText || "";
+      // Handle HTML entities that might not be decoded by textContent
+      plainText = plainText.replace(/&nbsp;/g, " ")
+        .replace(/&amp;/g, "&")
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'");
+    }
+    
+    // Try Clipboard API with proper formatting
     if (navigator.clipboard && window.ClipboardItem) {
-      const htmlBlob = new Blob([html], { type: "text/html" });
-      const textBlob = new Blob([plainText], { type: "text/plain" });
-      await navigator.clipboard.write([
-        new ClipboardItem({
-          "text/html": htmlBlob,
-          "text/plain": textBlob,
-        }),
-      ]);
-    } else {
+      try {
+        // Use plain text/html without extra wrapping - simpler and more compatible
+        const htmlBlob = new Blob([html], { type: "text/html" });
+        const textBlob = new Blob([plainText], { type: "text/plain" });
+        
+        await navigator.clipboard.write([
+          new ClipboardItem({
+            "text/html": htmlBlob,
+            "text/plain": textBlob
+          })
+        ]);
+        console.log("[Lasso] HTML clipboard write succeeded");
+        return;
+      } catch (htmlError) {
+        console.warn("[Lasso] HTML clipboard failed:", htmlError.message);
+        
+        // Try writing formats separately (Safari/older browser fix)
+        try {
+          await navigator.clipboard.write([
+            new ClipboardItem({ "text/html": htmlBlob })
+          ]);
+          await navigator.clipboard.write([
+            new ClipboardItem({ "text/plain": textBlob })
+          ]);
+          console.log("[Lasso] Separate format writes succeeded");
+          return;
+        } catch (separateError) {
+          console.warn("[Lasso] Separate writes also failed:", separateError.message);
+        }
+      }
+    }
+    
+    // Fallback: try plain text only
+    try {
       await navigator.clipboard.writeText(plainText);
+      console.log("[Lasso] Fallback to plain text succeeded");
+    } catch (textError) {
+      // Final fallback: textarea method
+      console.warn("[Lasso] writeText failed, trying textarea fallback:", textError);
+      try {
+        const ta = document.createElement("textarea");
+        ta.value = plainText;
+        ta.style.cssText = "position:fixed;opacity:0;top:0;left:0";
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        ta.remove();
+        console.log("[Lasso] Textarea fallback succeeded");
+      } catch (fallbackErr) {
+        console.error("[Lasso] All clipboard methods failed:", fallbackErr);
+      }
     }
   }
 

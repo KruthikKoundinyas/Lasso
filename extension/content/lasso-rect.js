@@ -156,10 +156,31 @@
   // =====================
   // CLIPBOARD
   // =====================
+  // Note: Uses local fallback functions for rectangle mode
+  
   function serializeHTML(elements) {
     var html = "";
     for (var i = 0; i < elements.length; i++) {
       html += elements[i].outerHTML;
+    }
+    return html;
+  }
+
+  function serializeCleanHTML(elements) {
+    var html = "";
+    for (var i = 0; i < elements.length; i++) {
+      var clone = elements[i].cloneNode(true);
+      // Remove classes, styles, ids
+      var all = clone.querySelectorAll("*");
+      for (var j = 0; j < all.length; j++) {
+        all[j].removeAttribute("class");
+        all[j].removeAttribute("id");
+        all[j].removeAttribute("style");
+      }
+      clone.removeAttribute("class");
+      clone.removeAttribute("id");
+      clone.removeAttribute("style");
+      html += clone.outerHTML;
     }
     return html;
   }
@@ -200,18 +221,73 @@
   }
 
   async function writeHTML(html) {
+    if (!html || html.trim() === "") {
+      console.warn("[Lasso] No HTML to write");
+      return false;
+    }
+    
+    // Get plain text fallback using DOM (properly handles HTML entities)
+    var tempDiv = document.createElement("div");
+    tempDiv.innerHTML = html;
+    var plainText = tempDiv.textContent || tempDiv.innerText || "";
+    
+    // Try Clipboard API first
     try {
-      var blob = new Blob([html], { type: "text/html" });
-      var textBlob = new Blob([html], { type: "text/plain" });
-      await navigator.clipboard.write([
-        new ClipboardItem({
-          "text/html": blob,
-          "text/plain": textBlob,
-        }),
-      ]);
+      if (navigator.clipboard && window.ClipboardItem) {
+        var blob = new Blob([html], { type: "text/html" });
+        var textBlob = new Blob([plainText], { type: "text/plain" });
+        
+        try {
+          await navigator.clipboard.write([
+            new ClipboardItem({
+              "text/html": blob,
+              "text/plain": textBlob,
+            }),
+          ]);
+          console.log("[Lasso] Clipboard API succeeded");
+          return true;
+        } catch (singleError) {
+          // Try separate writes for Safari/browser compatibility
+          try {
+            await navigator.clipboard.write([
+              new ClipboardItem({ "text/html": blob })
+            ]);
+            await navigator.clipboard.write([
+              new ClipboardItem({ "text/plain": textBlob })
+            ]);
+            console.log("[Lasso] Separate clipboard writes succeeded");
+            return true;
+          } catch (separateError) {
+            console.warn("[Lasso] Separate writes failed:", separateError.message);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("[Lasso] Clipboard API failed:", e.message);
+    }
+
+    // Fallback: try plain text
+    try {
+      await navigator.clipboard.writeText(plainText);
+      console.log("[Lasso] Fallback to plain text succeeded");
       return true;
     } catch (e) {
-      return false;
+      // Final fallback: textarea method
+      console.warn("[Lasso] writeText failed, trying textarea fallback:", e);
+      try {
+        var ta = document.createElement("textarea");
+        ta.value = plainText;
+        ta.style.cssText = "position:fixed;opacity:0;top:0;left:0";
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        ta.remove();
+        console.log("[Lasso] Textarea fallback succeeded");
+        return true;
+      } catch (fallbackErr) {
+        console.error("[Lasso] All methods failed:", fallbackErr);
+        return false;
+      }
     }
   }
 
@@ -683,6 +759,10 @@
           content = serializeHTML(elements);
           success = await writeHTML(content);
           break;
+        case "cleanHTML":
+          content = serializeCleanHTML(elements);
+          success = await writeHTML(content);
+          break;
         case "markdown":
           content = serializeMarkdown(elements);
           success = await writeMarkdown(content);
@@ -734,6 +814,9 @@
       case "html":
         content = serializeHTML(elements);
         break;
+      case "cleanHTML":
+        content = serializeCleanHTML(elements);
+        break;
       case "markdown":
         content = serializeMarkdown(elements);
         break;
@@ -748,7 +831,7 @@
     }
 
     var copyFn =
-      format === "html"
+      format === "html" || format === "cleanHTML"
         ? writeHTML
         : format === "markdown"
           ? writeMarkdown
